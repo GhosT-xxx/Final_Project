@@ -1,0 +1,88 @@
+Person (abstract)
++ id: String
++ name: String
++ username: String
++ password: String
++ getId(): String
++ getName(): String
++ getUsername(): String
++ getPassword(): String
++ setName(name: String): void
++ setUsername(username: String): void
++ setPassword(password: String): void
+
+Member extends Person
++ membershipPlan: Plan
++ membershipStart: LocalDate
++ membershipEnd: LocalDate
++ enrolledSessionIds: List<String>
++ setMembership(plan: Plan, start: LocalDate, end: LocalDate): void
++ enrollSession(sessionId: String): boolean
++ cancelEnrollment(sessionId: String): boolean
+
+Trainer extends Person
++ specialty: String
++ sessionIds: List<String>
++ addSession(sessionId: String): void
++ getSessions(): List<String>
+
+Administrator extends Person implements IUserOperations, Authenticatable
++ addMember(m: Member): void
++ viewMemberByUsername(username: String): Member
++ updateMember(username: String, updated: Member): boolean
++ deleteMember(username: String): boolean
+
+Session
++ sessionId: String
++ name: String
++ date: LocalDate
++ time: LocalTime
++ capacity: int
++ trainerUsername: String
++ enrolledUsernames: List<String>
++ enrollMember(username: String): boolean
++ removeMember(username: String): boolean
++ isFull(): boolean
+
+Plan
++ planName: String
++ durationMonths: int
++ price: double
+
+GymDataManager
++ membersByUsername: Map<String, Member>
++ trainersByUsername: Map<String, Trainer>
++ adminsByUsername: Map<String, Administrator>
++ sessionsById: Map<String, Session>
++ plansByName: Map<String, Plan>
++ loadAll(): void
++ saveAll(): void
++ addMember(m: Member): void
++ getMemberByUsername(username: String): Member
+...
+
+Log
++ path: Path
++ log(username: String, message: String): void
+
+RunGym
++ main(args: String[]): void
++ mainMenu(): void
++ registerMenu(): void
++ loginMenu(): void
++ memberMenu(m: Member): void
++ trainerMenu(t: Trainer): void
++ adminMenu(a: Administrator): void
+
+Interfaces:
+IUserOperations { addMember(..), viewMemberByUsername(..), updateMember(..), deleteMember(..) }
+Authenticatable { authenticate(username, password): boolean }
+
+Relationships:
+- Person -> Member, Trainer, Administrator (inheritance)
+- Administrator implements IUserOperations, Authenticatable
+- Member (1) <-> (0..*) Session (association)
+- Member (0..1) <-> (1) Plan (association)
+- Session (many) <-> (1) Trainer (association)
+- GymDataManager aggregates Members/Trainers/Sessions/Plans
+- RunGym depends on GymDataManager and Log
