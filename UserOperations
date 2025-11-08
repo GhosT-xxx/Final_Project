@@ -1,0 +1,9 @@
+/**
+ * Interface for admin CRUD operations.
+ */
+public interface IUserOperations {
+    void addMember(Member m);
+    Member viewMemberByUsername(String username);
+    boolean updateMember(String username, Member updated);
+    boolean deleteMember(String username);
+}
