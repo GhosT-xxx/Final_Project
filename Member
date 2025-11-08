@@ -1,0 +1,43 @@
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Member class.
+ */
+public class Member extends Person {
+    private Plan membershipPlan;
+    private LocalDate membershipStart;
+    private LocalDate membershipEnd;
+    private List<String> enrolledSessionIds = new ArrayList<>();
+
+    public Member(String name, String username, String password) {
+        super(name, username, password);
+    }
+
+    public Plan getMembershipPlan() { return membershipPlan; }
+    public LocalDate getMembershipStart() { return membershipStart; }
+    public LocalDate getMembershipEnd() { return membershipEnd; }
+
+    public void setMembership(Plan plan, LocalDate start, LocalDate end) {
+        this.membershipPlan = plan;
+        this.membershipStart = start;
+        this.membershipEnd = end;
+    }
+
+    public boolean enrollSession(String sessionId) {
+        if (enrolledSessionIds.contains(sessionId)) return false;
+        enrolledSessionIds.add(sessionId);
+        return true;
+    }
+
+    public boolean cancelEnrollment(String sessionId) {
+        return enrolledSessionIds.remove(sessionId);
+    }
+
+    @Override
+    public String toString() {
+        String planName = (membershipPlan == null) ? "None" : membershipPlan.getPlanName();
+        return String.format("Member %s, username=%s, plan=%s", name, username, planName);
+    }
+}
