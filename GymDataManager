@@ -1,0 +1,219 @@
+import java.io.*;
+import java.nio.file.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.*;
+
+/**
+ * Manages data: loads/saves CSVs and stores in-memory maps.
+ */
+public class GymDataManager {
+    private Map<String, Member> membersByUsername = new HashMap<>();
+    private Map<String, Trainer> trainersByUsername = new HashMap<>();
+    private Map<String, Administrator> adminsByUsername = new HashMap<>();
+    private Map<String, Session> sessionsById = new HashMap<>();
+    private Map<String, Plan> plansByName = new HashMap<>();
+
+    private Path usersCsv;
+    private Path sessionsCsv;
+    private Path plansCsv;
+
+    public GymDataManager(Path usersCsv, Path sessionsCsv, Path plansCsv) {
+        this.usersCsv = usersCsv;
+        this.sessionsCsv = sessionsCsv;
+        this.plansCsv = plansCsv;
+    }
+
+    // Accessors
+    public Member getMemberByUsername(String username) { return membersByUsername.get(username); }
+    public Trainer getTrainerByUsername(String username) { return trainersByUsername.get(username); }
+    public Administrator getAdminByUsername(String username) { return adminsByUsername.get(username); }
+    public Session getSessionById(String id) { return sessionsById.get(id); }
+    public Plan getPlanByName(String name) { return plansByName.get(name); }
+
+    public Collection<Member> allMembers() { return membersByUsername.values(); }
+    public Collection<Trainer> allTrainers() { return trainersByUsername.values(); }
+    public Collection<Administrator> allAdmins() { return adminsByUsername.values(); }
+    public Collection<Plan> allPlans() { return plansByName.values(); }
+    public Collection<Session> allSessions() { return sessionsById.values(); }
+
+    public boolean usernameExists(String username) {
+        return membersByUsername.containsKey(username) || trainersByUsername.containsKey(username) || adminsByUsername.containsKey(username);
+    }
+
+    public void addMember(Member m) { membersByUsername.put(m.getUsername(), m); }
+    public void addTrainer(Trainer t) { trainersByUsername.put(t.getUsername(), t); }
+    public void addAdmin(Administrator a) { adminsByUsername.put(a.getUsername(), a); }
+    public void addPlan(Plan p) { plansByName.put(p.getPlanName(), p); }
+    public void addSession(Session s) { sessionsById.put(s.getSessionId(), s); }
+
+    public boolean updateMember(String username, Member updated) {
+        if (!membersByUsername.containsKey(username)) return false;
+        membersByUsername.remove(username);
+        membersByUsername.put(updated.getUsername(), updated);
+        return true;
+    }
+
+    public boolean deleteMember(String username) {
+        return membersByUsername.remove(username) != null;
+    }
+
+    // Load all CSVs
+    public void loadAll() {
+        loadPlans();
+        loadUsers();
+        loadSessions();
+    }
+
+    private void loadPlans() {
+        if (plansCsv == null || !Files.exists(plansCsv)) return;
+        try (BufferedReader br = Files.newBufferedReader(plansCsv)) {
+            String line; boolean first = true;
+            while ((line = br.readLine()) != null) {
+                if (first) { first = false; continue; } // skip header
+                String[] parts = line.split(",");
+                if (parts.length < 3) continue;
+                String name = parts[0].trim();
+                int months = Integer.parseInt(parts[1].trim());
+                double price = Double.parseDouble(parts[2].trim());
+                addPlan(new Plan(name, months, price));
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load plans: " + e.getMessage());
+        }
+    }
+
+    private void loadUsers() {
+        if (usersCsv == null || !Files.exists(usersCsv)) return;
+        try (BufferedReader br = Files.newBufferedReader(usersCsv)) {
+            String line; boolean first = true;
+            while ((line = br.readLine()) != null) {
+                if (first) { first = false; continue; }
+                String[] p = line.split(",");
+                if (p.length < 4) continue;
+                String role = p[0].trim();
+                String name = p[1].trim();
+                String username = p[2].trim();
+                String password = p[3].trim();
+                if (role.equalsIgnoreCase("Member")) {
+                    Member m = new Member(name, username, password);
+                    // optional plan fields
+                    if (p.length >= 7) {
+                        String planName = p[4].trim();
+                        try {
+                            LocalDate start = LocalDate.parse(p[5].trim());
+                            LocalDate end = LocalDate.parse(p[6].trim());
+                            Plan plan = plansByName.get(planName);
+                            if (plan != null) m.setMembership(plan, start, end);
+                        } catch (Exception ex) { /* ignore parse errors */ }
+                    }
+                    addMember(m);
+                } else if (role.equalsIgnoreCase("Trainer")) {
+                    String specialty = (p.length >= 5) ? p[4].trim() : "";
+                    Trainer t = new Trainer(name, username, password, specialty);
+                    addTrainer(t);
+                } else if (role.equalsIgnoreCase("Admin")) {
+                    Administrator a = new Administrator(name, username, password, this);
+                    addAdmin(a);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load users: " + e.getMessage());
+        }
+    }
+
+    private void loadSessions() {
+        if (sessionsCsv == null || !Files.exists(sessionsCsv)) return;
+        try (BufferedReader br = Files.newBufferedReader(sessionsCsv)) {
+            String line; boolean first = true;
+            while ((line = br.readLine()) != null) {
+                if (first) { first = false; continue; }
+                String[] p = line.split(",");
+                if (p.length < 6) continue;
+                try {
+                    String name = p[1].trim();
+                    LocalDate date = LocalDate.parse(p[2].trim());
+                    LocalTime time = LocalTime.parse(p[3].trim());
+                    int capacity = Integer.parseInt(p[4].trim());
+                    String trainer = p[5].trim();
+                    Session s = new Session(name, date, time, capacity, trainer);
+                    if (p.length >= 7) {
+                        String enrolled = p[6].trim();
+                        if (!enrolled.isEmpty()) {
+                            String[] en = enrolled.split(";");
+                            for (String u : en) s.enrollMember(u.trim());
+                        }
+                    }
+                    addSession(s);
+                } catch (Exception ex) {
+                    // ignore malformed lines
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load sessions: " + e.getMessage());
+        }
+    }
+
+    // Save all CSVs
+    public void saveAll() {
+        savePlans();
+        saveUsers();
+        saveSessions();
+    }
+
+    private void savePlans() {
+        if (plansCsv == null) return;
+        try (BufferedWriter bw = Files.newBufferedWriter(plansCsv)) {
+            bw.write("planName,durationMonths,price");
+            bw.newLine();
+            for (Plan p : plansByName.values()) {
+                bw.write(String.format("%s,%d,%.2f", p.getPlanName(), p.getDurationMonths(), p.getPrice()));
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to save plans: " + e.getMessage());
+        }
+    }
+
+    private void saveUsers() {
+        if (usersCsv == null) return;
+        try (BufferedWriter bw = Files.newBufferedWriter(usersCsv)) {
+            bw.write("role,name,username,password,extra1,extra2,extra3");
+            bw.newLine();
+            for (Member m : membersByUsername.values()) {
+                String plan = (m.getMembershipPlan() == null) ? "" : m.getMembershipPlan().getPlanName();
+                String start = (m.getMembershipStart() == null) ? "" : m.getMembershipStart().toString();
+                String end = (m.getMembershipEnd() == null) ? "" : m.getMembershipEnd().toString();
+                bw.write(String.join(",", "Member", m.getName(), m.getUsername(), m.getPassword(), plan, start, end));
+                bw.newLine();
+            }
+            for (Trainer t : trainersByUsername.values()) {
+                bw.write(String.join(",", "Trainer", t.getName(), t.getUsername(), t.getPassword(), t.getSpecialty()));
+                bw.newLine();
+            }
+            for (Administrator a : adminsByUsername.values()) {
+                bw.write(String.join(",", "Admin", a.getName(), a.getUsername(), a.getPassword()));
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to save users: " + e.getMessage());
+        }
+    }
+
+    private void saveSessions() {
+        if (sessionsCsv == null) return;
+        try (BufferedWriter bw = Files.newBufferedWriter(sessionsCsv)) {
+            bw.write("sessionId,name,date,time,capacity,trainer,enrolled");
+            bw.newLine();
+            for (Session s : sessionsById.values()) {
+                String enrolled = String.join(";", s.getEnrolledUsernames());
+                bw.write(String.format("%s,%s,%s,%s,%d,%s,%s",
+                        s.getSessionId(), s.getName(), s.getDate().toString(), s.getTime().toString(),
+                        s.getCapacity(), s.getTrainerUsername(), enrolled));
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to save sessions: " + e.getMessage());
+        }
+    }
+}
