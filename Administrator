@@ -1,0 +1,44 @@
+public class Administrator extends Person implements IUserOperations, Authenticatable {
+
+    private GymDataManager dataManager;
+
+    public Administrator(String name, String username, String password, GymDataManager dataManager) {
+        super(name, username, password);
+        this.dataManager = dataManager;
+    }
+
+    public void addMember(Member m) {
+        dataManager.addMember(m);
+    }
+
+    public Member viewMemberByUsername(String username) {
+        return dataManager.getMemberByUsername(username);
+    }
+
+    public boolean updateMember(String username, Member updated) {
+        Member existing = dataManager.getMemberByUsername(username);
+        if (existing == null) return false;
+
+        existing.setName(updated.getName());
+        existing.setUsername(updated.getUsername());
+        existing.setPassword(updated.getPassword());
+        existing.setMembership(
+            updated.getMembershipPlan(),
+            updated.getMembershipStart(),
+            updated.getMembershipEnd()
+        );
+        return true;
+    }
+
+    public boolean deleteMember(String username) {
+        return dataManager.removeMember(username);
+    }
+
+    public boolean authenticate(String username, String password) {
+        return this.username.equals(username) && this.password.equals(password);
+    }
+
+    public String toString() {
+        return String.format("Administrator %s, username=%s", name, username);
+    }
+}
