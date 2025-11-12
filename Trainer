@@ -1,0 +1,31 @@
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Trainer class.
+ */
+public class Trainer extends Person {
+    private String specialty;
+    private List<String> sessionIds = new ArrayList<>();
+
+    public Trainer(String name, String username, String password, String specialty) {
+        super(name, username, password);
+        this.specialty = specialty;
+    }
+
+    public String getSpecialty() { return specialty; }
+
+    public void setSpecialty(String specialty) { this.specialty = specialty; }
+
+    public void addSession(String sessionId) {
+        if (!sessionIds.contains(sessionId)) {
+            sessionIds.add(sessionId);
+        }
+    }
+
+    public List<String> getSessions() { return sessionIds; }
+
+    public String toString() {
+        return String.format("Trainer %s, username=%s, specialty=%s", name, username, specialty);
+    }
+}
