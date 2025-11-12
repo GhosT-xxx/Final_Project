@@ -1,0 +1,53 @@
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Workout session class.
+ */
+public class Session {
+    private String sessionId;
+    private String name;
+    private LocalDate date;
+    private LocalTime time;
+    private int capacity;
+    private String trainerUsername;
+    private List<String> enrolledUsernames = new ArrayList<>();
+
+    public Session(String name, LocalDate date, LocalTime time, int capacity, String trainerUsername) {
+        this.sessionId = "S-" + UUID.randomUUID().toString().substring(0, 6);
+        this.name = name;
+        this.date = date;
+        this.time = time;
+        this.capacity = capacity;
+        this.trainerUsername = trainerUsername;
+    }
+
+    public String getSessionId() { return sessionId; }
+    public String getName() { return name; }
+    public LocalDate getDate() { return date; }
+    public LocalTime getTime() { return time; }
+    public int getCapacity() { return capacity; }
+    public String getTrainerUsername() { return trainerUsername; }
+    public List<String> getEnrolledUsernames() { return enrolledUsernames; }
+
+    public boolean isFull() { return enrolledUsernames.size() >= capacity; }
+
+    public boolean enrollMember(String username) {
+        if (isFull() || enrolledUsernames.contains(username)) return false;
+        enrolledUsernames.add(username);
+        return true;
+    }
+
+    public boolean removeMember(String username) {
+        return enrolledUsernames.remove(username);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Session %s (%s) on %s %s by %s - %d/%d enrolled",
+                sessionId, name, date.toString(), time.toString(), trainerUsername, enrolledUsernames.size(), capacity);
+    }
+}
