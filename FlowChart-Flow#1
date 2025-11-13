@@ -1,0 +1,8 @@
+graph TD
+    A[START] --> B(Input: sessionId);
+    B --> C{Is sessionId already in enrolledSessionIds?};
+    C -- YES --> D[Return false];
+    C -- NO --> E[Add sessionId to enrolledSessionIds list];
+    E --> F[Return true];
+    D --> G(END);
+    F --> G;
