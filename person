@@ -1,9 +1,9 @@
 /**
  * Team: Orrah
  * Members:
- *  - Juan A. Barraza
- *  - Nicholas Rojas
- *  - Danniel Esparza
+ * - Juan A. Barraza
+ * - Nicholas Rojas
+ * - Danniel Esparza
  *
  * Course: CS 3331 - Advanced Object-Oriented Programming
  * Instructor: Dr. Bhanukiran Gurijala
@@ -21,8 +21,8 @@ public abstract class Person {
     protected String username;
     protected String password;
 
-    public Person(string name, String username, String password) {
-        this.id = UUID.randomUUID().toString().Substring(0,8);
+    public Person(String name, String username, String password) { 
+        this.id = UUID.randomUUID().toString().substring(0,8); 
         this.name = name;
         this.username = username;
         this.password = password;
