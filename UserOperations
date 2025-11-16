@@ -3,7 +3,7 @@
  */
 public interface IUserOperations {
     void addMember(Member m);
-    Member viewMemberByUsername(String username);
-    boolean updateMember(String username, Member updated);
-    boolean deleteMember(String username);
+    Member viewMemberByUsername(string username);
+    boolean updateMember(string username, Member updated);
+    boolean deleteMember(string username);
 }
