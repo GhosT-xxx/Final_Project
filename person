@@ -21,8 +21,8 @@ public abstract class Person {
     protected String username;
     protected String password;
 
-    public Person(String name, String username, String password) {
-        this.id = UUID.randomUUID().toString().substring(0,8);
+    public Person(string name, String username, String password) {
+        this.id = UUID.randomUUID().toString().Substring(0,8);
         this.name = name;
         this.username = username;
         this.password = password;
@@ -40,6 +40,5 @@ public abstract class Person {
     @Override
     public String toString() {
         return String.format("%s (ID:%s, username:%s)", name, id, username);
-        {if there is anything else in this code you can make or edit it would help alot}
     }
 }
