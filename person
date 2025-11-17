@@ -1,38 +1,61 @@
 /**
  * Team: Orrah
  * Members:
- * - Juan A. Barraza
- * - Nicholas Rojas
- * - Danniel Esparza
+ *  - Juan A. Barraza
+ *  - Nicholas Rojas
+ *  - Danniel Esparza
  *
  * Course: CS 3331 - Advanced Object-Oriented Programming
  * Instructor: Dr. Bhanukiran Gurijala
- * Assignment: Programming Assignment 1 - Gym Management System (Part 1 Progress)
+ * Assignment: Programming Assignment 1 - Gym Management System
+ *
+ * Honesty Statement:
+ * We affirm that we completed this work entirely on our own as a team.
+ *
+ * Abstract base class for all people in the system.
+ *
+ * @author Team Orrah
+ * @version 1.0
  */
 
 import java.util.UUID;
 
 /**
- * Abstract base class for all people in the system.
+ * Abstract base class representing a person in the gym system.
  */
 public abstract class Person {
+    /** Unique identifier for the person. */
     protected String id;
+
+    /** Full name of the person. */
     protected String name;
+
+    /** Username used for authentication. */
     protected String username;
+
+    /** Password used for authentication. */
     protected String password;
 
-    public Person(String name, String username, String password) { 
-        this.id = UUID.randomUUID().toString().substring(0,8); 
+    /**
+     * Create a new Person with generated id.
+     *
+     * @param name     full name
+     * @param username chosen username
+     * @param password chosen password
+     */
+    public Person(String name, String username, String password) {
+        this.id = UUID.randomUUID().toString().substring(0, 8);
         this.name = name;
         this.username = username;
         this.password = password;
     }
 
+    /** Getters and setters **/
+
     public String getId() { return id; }
     public String getName() { return name; }
     public String getUsername() { return username; }
     public String getPassword() { return password; }
-
     public void setName(String name) { this.name = name; }
     public void setUsername(String username) { this.username = username; }
     public void setPassword(String password) { this.password = password; }
