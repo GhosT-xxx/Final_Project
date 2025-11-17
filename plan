@@ -15,7 +15,6 @@ public class Plan {
     public String getPlanName() { return planName; }
     public int getDurationMonths() { return durationMonths; }
     public double getPrice() { return price; }
-
     public void setDurationMonths(int d) { this.durationMonths = d; }
     public void setPrice(double p) { this.price = p; }
 
