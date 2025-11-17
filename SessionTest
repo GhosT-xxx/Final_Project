@@ -1,0 +1,17 @@
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+public class SessionTest {
+    @Test
+    public void testEnrollAndCapacity() {
+        Session s = new Session("Yoga", LocalDate.now(), LocalTime.of(10,0), 2, "trainer1");
+        assertTrue(s.enrollMember("u1"));
+        assertTrue(s.enrollMember("u2"));
+        assertFalse(s.enrollMember("u3")); // capacity 2
+        assertTrue(s.isFull());
+        assertTrue(s.removeMember("u1"));
+        assertFalse(s.isFull());
+    }
+}
