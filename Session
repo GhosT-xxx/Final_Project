@@ -1,3 +1,7 @@
+/**
+ * Session (workout session) class.
+ */
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -5,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Workout session class.
+ * Represents a workout session.
  */
 public class Session {
     private String sessionId;
