@@ -1,3 +1,7 @@
+/**
+ * Logging utility that writes timestamped messages to a file.
+ */
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,7 +15,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class Log {
     private final Path path;
-    private final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm:ss MM/dd/yyyy"); 
+    private final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm:ss MM/dd/yyyy");
 
     public Log(Path path) {
         this.path = path;
