@@ -1,6 +1,13 @@
 /**
- * Simple interface for classes that can authenticate.
+ * Interface for classes that support authentication.
  */
 public interface Authenticatable {
+    /**
+     * Authenticate using username and password.
+     *
+     * @param username username to check
+     * @param password password to check
+     * @return true if credentials match, false otherwise
+     */
     boolean authenticate(String username, String password);
 }
