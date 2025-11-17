@@ -1,43 +1,56 @@
+/**
+ * Member class representing gym customers.
+ */
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Member class.
+ * Represents a member of the gym.
  */
 public class Member extends Person {
     private Plan membershipPlan;
     private LocalDate membershipStart;
     private LocalDate membershipEnd;
     private List<String> enrolledSessionIds = new ArrayList<>();
+    private Log log;
 
     public Member(String name, String username, String password) {
         super(name, username, password);
+        this.log = new Log(java.nio.file.Paths.get("gym_log.txt"));
     }
 
+    // getters
     public Plan getMembershipPlan() { return membershipPlan; }
     public LocalDate getMembershipStart() { return membershipStart; }
     public LocalDate getMembershipEnd() { return membershipEnd; }
+    public List<String> getEnrolledSessionIds() { return enrolledSessionIds; }
+    public Log getLog() { return log; }
 
     public void setMembership(Plan plan, LocalDate start, LocalDate end) {
         this.membershipPlan = plan;
         this.membershipStart = start;
         this.membershipEnd = end;
+        if (log != null) log.log(this.username, "Membership set to " + (plan == null ? "None" : plan.getPlanName()));
     }
 
     public boolean enrollSession(String sessionId) {
         if (enrolledSessionIds.contains(sessionId)) return false;
         enrolledSessionIds.add(sessionId);
+        if (log != null) log.log(this.username, "Enrolled in session " + sessionId);
         return true;
     }
 
     public boolean cancelEnrollment(String sessionId) {
-        return enrolledSessionIds.remove(sessionId);
+        boolean removed = enrolledSessionIds.remove(sessionId);
+        if (removed && log != null) log.log(this.username, "Cancelled enrollment " + sessionId);
+        return removed;
     }
 
     @Override
     public String toString() {
         String planName = (membershipPlan == null) ? "None" : membershipPlan.getPlanName();
-        return String.format("Member %s, username=%s, plan=%s", name, username, planName);
+        return String.format("Member %s (username=%s, plan=%s)", name, username, planName);
     }
 }
