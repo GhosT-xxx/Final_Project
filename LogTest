@@ -1,0 +1,24 @@
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.*;
+import java.nio.file.*;
+
+public class LogTest {
+    private Path testLog = Paths.get("test_log.txt");
+
+    @BeforeEach
+    public void cleanup() throws Exception {
+        if (Files.exists(testLog)) Files.delete(testLog);
+    }
+
+    @Test
+    public void testLogWrites() {
+        Log l = new Log(testLog);
+        l.log("tester", "did something");
+        assertTrue(Files.exists(testLog));
+        try {
+            String content = new String(Files.readAllBytes(testLog));
+            assertTrue(content.contains("tester"));
+            assertTrue(content.contains("did something"));
+        } catch (Exception e) { fail("Could not read log"); }
+    }
+}
