@@ -1,3 +1,10 @@
+/**
+ * Administrator class that performs management operations.
+ */
+
+/**
+ * Administrator extends Person and provides management operations.
+ */
 public class Administrator extends Person implements IUserOperations, Authenticatable {
 
     private GymDataManager dataManager;
