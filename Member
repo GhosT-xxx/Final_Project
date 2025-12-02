@@ -21,7 +21,6 @@ public class Member extends Person {
         this.log = new Log(java.nio.file.Paths.get("gym_log.txt"));
     }
 
-    // getters
     public Plan getMembershipPlan() { return membershipPlan; }
     public LocalDate getMembershipStart() { return membershipStart; }
     public LocalDate getMembershipEnd() { return membershipEnd; }
