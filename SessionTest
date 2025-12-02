@@ -15,3 +15,4 @@ public class SessionTest {
         assertFalse(s.isFull());
     }
 }
+
