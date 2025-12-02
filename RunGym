@@ -1,3 +1,7 @@
+/**
+ * Main application for the Gym Management System (menu-driven).
+ */
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -5,7 +9,7 @@ import java.time.LocalTime;
 import java.util.Scanner;
 
 /**
- * Main program class containing menus and flows.
+ * The RunGym class contains the main() entry point and menus.
  */
 public class RunGym {
     private static final Path USERS_CSV = Paths.get("GymUsersData.csv");
@@ -21,7 +25,6 @@ public class RunGym {
         manager = new GymDataManager(USERS_CSV, SESSIONS_CSV, PLANS_CSV);
         log = new Log(LOG_FILE);
         manager.loadAll();
-        // Ensure default admin exists for demo
         if (manager.getAdminByUsername("admin") == null) {
             Administrator a = new Administrator("Default Admin", "admin", "admin", manager);
             manager.addAdmin(a);
@@ -106,7 +109,7 @@ public class RunGym {
         System.out.println("Invalid credentials.");
     }
 
-    /* ---------------- Member Menu ---------------- */
+    /* Member menu and methods (managePlanFlow, enrollSessionFlow) */
     private void memberMenu(Member m) {
         while (true) {
             System.out.println("\nMember Menu - " + m.getUsername());
@@ -126,17 +129,12 @@ public class RunGym {
 
     private void managePlanFlow(Member m) {
         System.out.println("\nAvailable Plans:");
-        for (Plan p : manager.allPlans()) {
-            System.out.println(p);
-        }
+        for (Plan p : manager.allPlans()) System.out.println(p);
         System.out.print("Enter plan name to choose (or BACK): ");
         String input = scanner.nextLine().trim();
         if (input.equalsIgnoreCase("BACK")) return;
         Plan plan = manager.getPlanByName(input);
-        if (plan == null) {
-            System.out.println("Plan not found.");
-            return;
-        }
+        if (plan == null) { System.out.println("Plan not found."); return; }
         LocalDate start = LocalDate.now();
         LocalDate end = start.plusMonths(plan.getDurationMonths());
         m.setMembership(plan, start, end);
@@ -146,9 +144,7 @@ public class RunGym {
 
     private void enrollSessionFlow(Member m) {
         System.out.println("\nAvailable Sessions:");
-        for (Session s : manager.allSessions()) {
-            System.out.println(s);
-        }
+        for (Session s : manager.allSessions()) System.out.println(s);
         System.out.print("Enter sessionId to enroll (or BACK): ");
         String sid = scanner.nextLine().trim();
         if (sid.equalsIgnoreCase("BACK")) return;
@@ -168,7 +164,7 @@ public class RunGym {
         }
     }
 
-    /* ---------------- Trainer Menu ---------------- */
+    /* Trainer menu */
     private void trainerMenu(Trainer t) {
         while (true) {
             System.out.println("\nTrainer Menu - " + t.getUsername());
@@ -179,18 +175,13 @@ public class RunGym {
             String c = scanner.nextLine().trim();
             switch (c) {
                 case "1":
-                    for (Session s : manager.allSessions()) {
-                        if (s.getTrainerUsername().equals(t.getUsername()))
-                            System.out.println(s);
-                    }
+                    for (Session s : manager.allSessions())
+                        if (s.getTrainerUsername().equals(t.getUsername())) System.out.println(s);
                     break;
                 case "2":
                     System.out.println("Members enrolled in your sessions:");
-                    for (Session s : manager.allSessions()) {
-                        if (s.getTrainerUsername().equals(t.getUsername())) {
-                            System.out.println(s);
-                        }
-                    }
+                    for (Session s : manager.allSessions())
+                        if (s.getTrainerUsername().equals(t.getUsername())) System.out.println(s);
                     break;
                 case "3": log.log(t.getUsername(), "Signed out"); return;
                 default: System.out.println("Invalid option."); break;
@@ -198,7 +189,7 @@ public class RunGym {
         }
     }
 
-    /* ---------------- Admin Menu ---------------- */
+    /* Admin menu and submenus */
     private void adminMenu(Administrator a) {
         while (true) {
             System.out.println("\nAdmin Menu - " + a.getUsername());
@@ -243,45 +234,36 @@ public class RunGym {
                 case "2":
                     System.out.print("Enter ID, name, username or ALL: ");
                     String q = scanner.nextLine().trim();
-                    if (q.equalsIgnoreCase("ALL")) {
-                        for (Member m : manager.allMembers()) System.out.println(m);
-                    } else {
+                    if (q.equalsIgnoreCase("ALL")) for (Member m : manager.allMembers()) System.out.println(m);
+                    else {
                         Member found = manager.getMemberByUsername(q);
                         if (found != null) System.out.println(found);
                         else System.out.println("Member not found.");
                     }
                     break;
                 case "3":
-                    System.out.print("Enter username to update: ");
-                    String uname = scanner.nextLine().trim();
+                    System.out.print("Enter username to update: "); String uname = scanner.nextLine().trim();
                     Member old = manager.getMemberByUsername(uname);
                     if (old == null) { System.out.println("Not found."); break; }
                     System.out.println("1) Change name\n2) Change username\n3) Change password\n4) Change membership\nSelect: ");
                     String opt = scanner.nextLine().trim();
                     if (opt.equals("1")) { System.out.print("New name: "); old.setName(scanner.nextLine().trim()); }
                     else if (opt.equals("2")) { System.out.print("New username: "); String nu = scanner.nextLine().trim();
-                        if (manager.usernameExists(nu)) System.out.println("Username taken.");
-                        else { old.setUsername(nu); }
+                        if (manager.usernameExists(nu)) System.out.println("Username taken."); else old.setUsername(nu);
                     } else if (opt.equals("3")) { System.out.print("New password: "); old.setPassword(scanner.nextLine().trim()); }
-                    else if (opt.equals("4")) {
-                        System.out.print("Plan name: "); String pn = scanner.nextLine().trim();
-                        Plan plan = manager.getPlanByName(pn);
-                        if (plan == null) System.out.println("Plan not found.");
+                    else if (opt.equals("4")) { System.out.print("Plan name: "); String pn = scanner.nextLine().trim();
+                        Plan plan = manager.getPlanByName(pn); if (plan == null) System.out.println("Plan not found.");
                         else old.setMembership(plan, LocalDate.now(), LocalDate.now().plusMonths(plan.getDurationMonths()));
                     }
-                    log.log(uname, "Updated by Admin");
-                    System.out.println("Updated.");
+                    log.log(uname, "Updated by Admin"); System.out.println("Updated.");
                     break;
                 case "4":
-                    System.out.print("Enter username to delete: ");
-                    String del = scanner.nextLine().trim();
+                    System.out.print("Enter username to delete: "); String del = scanner.nextLine().trim();
                     Member toDel = manager.getMemberByUsername(del);
                     if (toDel == null) { System.out.println("Not found."); break; }
                     System.out.print("Confirm delete (Y/N): ");
                     if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
-                        manager.deleteMember(del);
-                        log.log(del, "Deleted by Admin");
-                        System.out.println("Deleted.");
+                        manager.deleteMember(del); log.log(del, "Deleted by Admin"); System.out.println("Deleted.");
                     }
                     break;
                 case "5": return;
@@ -308,37 +290,25 @@ public class RunGym {
                     System.out.print("Specialty: "); String spec = scanner.nextLine().trim();
                     if (manager.usernameExists(username)) { System.out.println("Username exists."); break; }
                     manager.addTrainer(new Trainer(name, username, pass, spec));
-                    log.log(username, "Trainer added by Admin");
-                    System.out.println("Trainer added.");
+                    log.log(username, "Trainer added by Admin"); System.out.println("Trainer added.");
                     break;
                 case "2":
-                    System.out.print("Enter username or ALL: ");
-                    String q = scanner.nextLine().trim();
-                    if (q.equalsIgnoreCase("ALL")) {
-                        for (Trainer t : manager.allTrainers()) System.out.println(t);
-                    } else {
-                        Trainer t = manager.getTrainerByUsername(q);
-                        if (t == null) System.out.println("Not found."); else System.out.println(t);
-                    }
+                    System.out.print("Enter username or ALL: "); String q = scanner.nextLine().trim();
+                    if (q.equalsIgnoreCase("ALL")) for (Trainer t : manager.allTrainers()) System.out.println(t);
+                    else { Trainer t = manager.getTrainerByUsername(q); if (t == null) System.out.println("Not found."); else System.out.println(t); }
                     break;
                 case "3":
-                    System.out.print("Enter username to update: ");
-                    String uname = scanner.nextLine().trim();
-                    Trainer tr = manager.getTrainerByUsername(uname);
-                    if (tr == null) { System.out.println("Not found."); break; }
-                    System.out.print("New specialty: "); tr.setSpecialty(scanner.nextLine().trim());
-                    System.out.println("Updated.");
-                    log.log(uname, "Trainer updated by Admin");
-                    break;
+                    System.out.print("Enter username to update: "); String uname = scanner.nextLine().trim();
+                    Trainer tr = manager.getTrainerByUsername(uname); if (tr == null) { System.out.println("Not found."); break; }
+                    System.out.print("New specialty: "); tr.setSpecialty(scanner.nextLine().trim()); System.out.println("Updated.");
+                    log.log(uname, "Trainer updated by Admin"); break;
                 case "4":
-                    System.out.print("Enter username to delete: ");
-                    String del = scanner.nextLine().trim();
+                    System.out.print("Enter username to delete: "); String del = scanner.nextLine().trim();
                     if (manager.getTrainerByUsername(del) == null) { System.out.println("Not found."); break; }
                     System.out.print("Confirm delete (Y/N): ");
                     if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
                         manager.allTrainers().removeIf(t -> t.getUsername().equals(del));
-                        log.log(del, "Trainer deleted by Admin");
-                        System.out.println("Deleted.");
+                        log.log(del, "Trainer deleted by Admin"); System.out.println("Deleted.");
                     }
                     break;
                 case "5": return;
@@ -367,56 +337,42 @@ public class RunGym {
                     if (manager.getTrainerByUsername(trainer) == null) System.out.println("Trainer not found.");
                     else {
                         Session s = new Session(name, LocalDate.parse(date), LocalTime.parse(time), cap, trainer);
-                        manager.addSession(s);
-                        log.log("admin", "Added session " + s.getSessionId());
-                        System.out.println("Session added: " + s.getSessionId());
+                        manager.addSession(s); log.log("admin", "Added session " + s.getSessionId()); System.out.println("Session added: " + s.getSessionId());
                     }
                     break;
                 case "2":
-                    System.out.print("Enter sessionId, name, date or ALL: ");
-                    String q = scanner.nextLine().trim();
-                    if (q.equalsIgnoreCase("ALL")) {
-                        for (Session s : manager.allSessions()) System.out.println(s);
-                    } else {
+                    System.out.print("Enter sessionId, name, date or ALL: "); String q = scanner.nextLine().trim();
+                    if (q.equalsIgnoreCase("ALL")) for (Session s : manager.allSessions()) System.out.println(s);
+                    else {
                         Session s = manager.getSessionById(q);
                         if (s != null) System.out.println(s);
                         else {
                             boolean found = false;
                             for (Session ss : manager.allSessions()) {
-                                if (ss.getName().equalsIgnoreCase(q) || ss.getDate().toString().equals(q)) {
-                                    System.out.println(ss); found = true;
-                                }
+                                if (ss.getName().equalsIgnoreCase(q) || ss.getDate().toString().equals(q)) { System.out.println(ss); found = true; }
                             }
                             if (!found) System.out.println("No sessions found.");
                         }
                     }
                     break;
                 case "3":
-                    System.out.print("Enter sessionId to update: ");
-                    String sid = scanner.nextLine().trim();
+                    System.out.print("Enter sessionId to update: "); String sid = scanner.nextLine().trim();
                     Session s = manager.getSessionById(sid);
                     if (s == null) { System.out.println("Not found."); break; }
-                    System.out.print("New date (YYYY-MM-DD or ENTER to skip): ");
-                    String nd = scanner.nextLine().trim();
+                    System.out.print("New date (YYYY-MM-DD or ENTER to skip): "); String nd = scanner.nextLine().trim();
                     if (!nd.isEmpty()) s = updateSessionDate(s, nd);
-                    System.out.print("New time (HH:MM:SS or ENTER to skip): ");
-                    String nt = scanner.nextLine().trim();
-                    if (!nt.isEmpty()) { s = updateSessionTime(s, nt); }
-                    System.out.print("New trainer username (or ENTER): ");
-                    String ntu = scanner.nextLine().trim();
+                    System.out.print("New time (HH:MM:SS or ENTER to skip): "); String nt = scanner.nextLine().trim();
+                    if (!nt.isEmpty()) s = updateSessionTime(s, nt);
+                    System.out.print("New trainer username (or ENTER): "); String ntu = scanner.nextLine().trim();
                     if (!ntu.isEmpty()) s = updateSessionTrainer(s, ntu);
-                    log.log("admin", "Updated session " + sid);
-                    System.out.println("Updated.");
+                    log.log("admin", "Updated session " + sid); System.out.println("Updated.");
                     break;
                 case "4":
-                    System.out.print("Enter sessionId to delete: ");
-                    String del = scanner.nextLine().trim();
+                    System.out.print("Enter sessionId to delete: "); String del = scanner.nextLine().trim();
                     if (manager.getSessionById(del) == null) { System.out.println("Not found."); break; }
                     System.out.print("Confirm delete (Y/N): ");
                     if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
-                        manager.allSessions().removeIf(ss -> ss.getSessionId().equals(del));
-                        log.log("admin", "Deleted session " + del);
-                        System.out.println("Deleted.");
+                        manager.allSessions().removeIf(ss -> ss.getSessionId().equals(del)); log.log("admin", "Deleted session " + del); System.out.println("Deleted.");
                     }
                     break;
                 case "5": return;
@@ -455,35 +411,23 @@ public class RunGym {
                     System.out.print("Plan name: "); String name = scanner.nextLine().trim();
                     System.out.print("Duration months: "); int months = Integer.parseInt(scanner.nextLine().trim());
                     System.out.print("Price: "); double price = Double.parseDouble(scanner.nextLine().trim());
-                    manager.addPlan(new Plan(name, months, price));
-                    log.log("admin", "Added plan " + name);
-                    System.out.println("Plan added.");
+                    manager.addPlan(new Plan(name, months, price)); log.log("admin", "Added plan " + name); System.out.println("Plan added.");
                     break;
-                case "2":
-                    for (Plan p : manager.allPlans()) System.out.println(p);
-                    log.log("admin", "Viewed plans");
-                    break;
+                case "2": for (Plan p : manager.allPlans()) System.out.println(p); log.log("admin", "Viewed plans"); break;
                 case "3":
-                    System.out.print("Enter plan name to update: ");
-                    String pn = scanner.nextLine().trim();
-                    Plan p = manager.getPlanByName(pn);
-                    if (p == null) { System.out.println("Plan not found."); break; }
+                    System.out.print("Enter plan name to update: "); String pn = scanner.nextLine().trim();
+                    Plan p = manager.getPlanByName(pn); if (p == null) { System.out.println("Plan not found."); break; }
                     System.out.print("New duration or ENTER: "); String nmonths = scanner.nextLine().trim();
                     if (!nmonths.isEmpty()) p.setDurationMonths(Integer.parseInt(nmonths));
                     System.out.print("New price or ENTER: "); String nprice = scanner.nextLine().trim();
                     if (!nprice.isEmpty()) p.setPrice(Double.parseDouble(nprice));
-                    log.log("admin", "Updated plan " + pn);
-                    System.out.println("Updated.");
-                    break;
+                    log.log("admin", "Updated plan " + pn); System.out.println("Updated."); break;
                 case "4":
-                    System.out.print("Enter plan name to delete: ");
-                    String del = scanner.nextLine().trim();
+                    System.out.print("Enter plan name to delete: "); String del = scanner.nextLine().trim();
                     if (manager.getPlanByName(del) == null) { System.out.println("Not found."); break; }
                     System.out.print("Confirm delete (Y/N): ");
                     if (scanner.nextLine().trim().equalsIgnoreCase("Y")) {
-                        manager.allPlans().removeIf(pl -> pl.getPlanName().equals(del));
-                        log.log("admin", "Deleted plan " + del);
-                        System.out.println("Deleted.");
+                        manager.allPlans().removeIf(pl -> pl.getPlanName().equals(del)); log.log("admin", "Deleted plan " + del); System.out.println("Deleted.");
                     }
                     break;
                 case "5": return;
