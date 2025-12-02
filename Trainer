@@ -1,8 +1,12 @@
+/**
+ * Trainer class representing instructors at the gym.
+ */
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Trainer class.
+ * Trainer entity extending Person.
  */
 public class Trainer extends Person {
     private String specialty;
@@ -14,18 +18,13 @@ public class Trainer extends Person {
     }
 
     public String getSpecialty() { return specialty; }
-
     public void setSpecialty(String specialty) { this.specialty = specialty; }
+    public void addSession(String sessionId) { sessionIds.add(sessionId); }
+    public List<String> getSessionIds() { return sessionIds; }
 
-    public void addSession(String sessionId) {
-        if (!sessionIds.contains(sessionId)) {
-            sessionIds.add(sessionId);
-        }
-    }
-
-    public List<String> getSessions() { return sessionIds; }
-
+    @Override
     public String toString() {
-        return String.format("Trainer %s, username=%s, specialty=%s", name, username, specialty);
+        return String.format("Trainer %s (username=%s, specialty=%s)", name, username, specialty);
     }
 }
+
